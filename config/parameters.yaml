@@ -1,0 +1,8 @@
+# Image Capture Service Name
+capture_service: "AR_Take_Image"
+# Image subscriber topic Name (This topic receives images from external publishers)
+image_subscriber_topic: "AR_Send_Image"
+
+# Server Address
+server: '192.168.0.177'
+port: 80
