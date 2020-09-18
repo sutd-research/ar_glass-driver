@@ -12,10 +12,10 @@ This driver provides a ROS interface to communicate to AR Glass. Images from the
 >      pip install httpserver
 
 #### Subscribed Topics
-- sensor_msgs/Image : /image_receiver
+- sensor_msgs/Image : /AR_Send_Image
   
 #### Services
-- ar_glass/Image: /capture
+- ar_glass/Image: /AR_Take_Image
 
 #### Note:
 >  The service and topic names are configured in the /config/parameters.yaml file. User can change the names by editing the file.
