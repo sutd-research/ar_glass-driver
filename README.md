@@ -5,8 +5,9 @@ This driver provides a ROS interface to communicate to AR Glass. Images from the
 
 ## Dependencies
 * ROS
-* Python 3.5 / 3.6
 * httpserver
+
+Tested on Ubuntu 16.04 ROS Kinetic. Not interfaced with HTTP communication yet.
 
 **Dependency Installation** <br /> 
 >      pip install httpserver
