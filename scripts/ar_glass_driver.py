@@ -8,12 +8,15 @@ from sensor_msgs.msg import Image as ImageMsg
 from cv_bridge import CvBridge
 from server import RequestHandler
 import numpy as np
+import requests
 import cv2
 
 capture_srv = None
 receiver_sub = None
 bridge = CvBridge()
 server = None
+server_id = None
+port_id = None
 seq_no = 0
 
 def image_receiver_cb(image_msg):
@@ -30,8 +33,13 @@ def image_receiver_cb(image_msg):
     rospy.loginfo("Received Processed Image. Image size: [%d, %d]" %(image.shape[0], image.shape[1]))
     #############################
 
-    # TODO
-    # http.send_image(image)
+    # Convert 'Image' (3D Array with BRG8 color encoding) into 'File' format
+    _, image_file = cv2.imencode('.jpg', image, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
+    image_string = image_file.tostring()
+
+    url = 'http://'+server_id+":"+port_id+'/messages'
+    r = requests.post(url,data = image_string, timeout = 5)
+    rospy.loginfo("Post Request Completed")
 
 def capture_image(req):
     """
@@ -45,16 +53,12 @@ def capture_image(req):
     """
     response = ImageResponse()
 
-    ##### Example Code To Create a Dummy Image for Testing ####
-    height = 100
-    width = 100
-    image = np.zeros((height,width,3), np.uint8)
-    image[:,0:width//2] = (255,0,0)      
-    image[:,width//2:width] = (0,255,0)
-    ###########################################################
+    url = 'http://'+server_id+":"+port_id+'/messages'
+    r =requests.get(url) 
 
-    # TODO
-    # image = http.get_image()
+    # Convert 'File' into 'Image' (3D Array with BRG8 color encoding) format
+    image = np.asarray(bytearray(r.content), dtype="uint8")
+    image = cv2.imdecode(image, cv2.IMREAD_COLOR)
 
     response.image = create_image_msg(image)
     return response
@@ -83,17 +87,22 @@ def ar_glass():
     rospy.init_node('ar_glass_driver')
     signal.signal(signal.SIGINT, terminate)
 
+    global server_id, port_id
     capture_service_name = rospy.get_param(rospy.get_name()+'/capture_service', 'capture')
     image_topic_name = rospy.get_param(rospy.get_name()+"/image_subscriber_topic", 'image_receiver')
-    server_address = rospy.get_param(rospy.get_name()+"/server", '192.168.0.177')
+    server_id = rospy.get_param(rospy.get_name()+"/server", '192.168.0.177')
     port_id = rospy.get_param(rospy.get_name()+"/port", 80)
+
+    url = 'http://'+server_id+":"+port_id+"/"
+    rospy.loginfo("Connecting to Server at " + server_id + " on Port " + port_id)
+    r =requests.get(url)
+    rospy.loginfo(r.text)
 
     global capture_srv, receiver_sub
     capture_srv = rospy.Service(capture_service_name, ImageSrv, capture_image)
     receiver_sub = rospy.Subscriber(image_topic_name, ImageMsg, image_receiver_cb)
 
-    # TODO
-    # Add any other initializations here
+    
 
     rospy.spin()
 
