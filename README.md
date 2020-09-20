@@ -5,12 +5,36 @@ This driver provides a ROS interface to communicate to AR Glass. Images from the
 
 ## Dependencies
 * ROS
-* httpserver
+* Python 2.7x
+* Numpy
 
-Tested on Ubuntu 16.04 ROS Kinetic. Not interfaced with HTTP communication yet.
+Tested on Ubuntu 16.04 ROS Kinetic
 
-**Dependency Installation** <br /> 
->      pip install httpserver
+**Compiling** <br /> 
+* Copy the package into catkin workspace. 
+    > (For information regading ROS installation and creating a catkin workspace, please refer ROS installation tutorials)
+* Compile the package
+    ```
+    # Open a terminal and go to catkin workspace directory
+    cd ~/catkin_ws
+
+    # Compile the package
+    catkin_make --only-pkg-with-deps ar_glass
+    ```
+
+* Configure IP Address of the AR Glass
+    * The IP address is configured within /config/parameters.yaml 
+    * Find the IP address of the AR Glass in the local network 
+        > The AR Glass and the host computer running this ROS package should be in the same network
+    * Edit the 'server' parameter to match the IP address of the AR Glass. <br />Example:
+        > server: '192.168.1.141'
+
+
+* Run the package
+    ```
+    roslaunch ar_glass ar_glass.launch
+    ```
+
 
 #### Subscribed Topics
 - sensor_msgs/Image : /AR_Send_Image
@@ -20,9 +44,6 @@ Tested on Ubuntu 16.04 ROS Kinetic. Not interfaced with HTTP communication yet.
 
 #### Note:
 >  The service and topic names are configured in the /config/parameters.yaml file. User can change the names by editing the file.
-
-Compile and run the package
->       roslaunch ar_glass ar_glass.launch
 
 #### Permissions:
 It might be required to provide execution permissions to the python executable.

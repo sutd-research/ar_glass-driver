@@ -38,8 +38,7 @@ def image_receiver_cb(image_msg):
     image_string = image_file.tostring()
 
     url = 'http://'+server_id+":"+port_id+'/messages'
-    r = requests.post(url,data = image_string, timeout = 5)
-    rospy.loginfo("Post Request Completed")
+    r = requests.post(url,data = image_string)
 
 def capture_image(req):
     """
