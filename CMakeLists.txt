@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   sensor_msgs
   cv_bridge
+  std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -19,6 +20,12 @@ find_package(catkin REQUIRED COMPONENTS
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################
+
+## Generate messages in the 'msg' folder
+add_message_files(
+  FILES
+  BoundingBox.msg
+)
 
 ## Generate services in the 'srv' folder
 add_service_files(
@@ -30,6 +37,7 @@ add_service_files(
 generate_messages(
   DEPENDENCIES
   sensor_msgs 
+  std_msgs
 )
 
 ###################################

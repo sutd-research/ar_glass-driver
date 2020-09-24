@@ -1,6 +1,6 @@
 # ROS Driver for AR Glass
 
-This driver provides a ROS interface to communicate to AR Glass. Images from the glass can be obtained through a ROS service. Images can be sent to the glass by publishing to the topic mentioned below. 
+This driver provides a ROS interface to communicate with AR Glass. Images from the glass can be obtained through a ROS service. Bounding Box information can be sent to the glass by publishing to the topic mentioned below. 
 
 
 ## Dependencies
@@ -37,7 +37,18 @@ Tested on Ubuntu 16.04 ROS Kinetic
 
 
 #### Subscribed Topics
-- sensor_msgs/Image : /AR_Send_Image
+- ar_glass/BoundingBox : /AR_Send_Image
+
+    ```
+    std_msgs/Header header
+        uint32 seq
+        time stamp
+        string frame_id
+    int32 left_x
+    int32 right_x
+    int32 top_y
+    int32 bottom_y
+    ```
   
 #### Services
 - ar_glass/Image: /AR_Take_Image

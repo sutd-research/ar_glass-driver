@@ -4,41 +4,34 @@ import sys
 import signal
 from ar_glass.srv import Image as ImageSrv
 from ar_glass.srv import ImageRequest, ImageResponse
+from ar_glass.msg import BoundingBox
 from sensor_msgs.msg import Image as ImageMsg 
 from cv_bridge import CvBridge
-from server import RequestHandler
+from glass_socket import GlassSocket
 import numpy as np
-import requests
 import cv2
 
 capture_srv = None
 receiver_sub = None
 bridge = CvBridge()
-server = None
-server_id = None
-port_id = None
 seq_no = 0
+glass_socket = None
 
-def image_receiver_cb(image_msg):
+def bb_receiver_cb(msg):
     """
-        Receives Images from external publishers and Redirects them to AR Glass
-        :param image: type- sensor_msgs.Image
+        Receives bounding box coordinates from External publisher and sends them to AR Glass
+        :param bounding_box: type-
 
-        This callback function gets called each time an external publisher sends an image,
+        This callback function gets called each time an external publisher sends a bounding box,
         to be sent to AR Glass.
     """
-    image = bridge.imgmsg_to_cv2(image_msg, desired_encoding='bgr8')
+    leftx = msg.left_x
+    topy = msg.top_y
+    rightx = msg.right_x
+    bottomy = msg.bottom_y
 
-    ##### Example Code Only ####
-    rospy.loginfo("Received Processed Image. Image size: [%d, %d]" %(image.shape[0], image.shape[1]))
-    #############################
-
-    # Convert 'Image' (3D Array with BRG8 color encoding) into 'File' format
-    _, image_file = cv2.imencode('.jpg', image, [int(cv2.IMWRITE_JPEG_QUALITY), 100])
-    image_string = image_file.tostring()
-
-    url = 'http://'+server_id+":"+port_id+'/messages'
-    r = requests.post(url,data = image_string)
+    rospy.loginfo("Received Bounding box [%d, %d, %d, %d]" %(leftx, topy, rightx, bottomy))
+    glass_socket.send_bounding_box(leftx, topy, rightx, bottomy)
 
 def capture_image(req):
     """
@@ -51,15 +44,9 @@ def capture_image(req):
         an image from the AR Glass.
     """
     response = ImageResponse()
-
-    url = 'http://'+server_id+":"+port_id+'/messages'
-    r =requests.get(url) 
-
-    # Convert 'File' into 'Image' (3D Array with BRG8 color encoding) format
-    image = np.asarray(bytearray(r.content), dtype="uint8")
-    image = cv2.imdecode(image, cv2.IMREAD_COLOR)
-
-    response.image = create_image_msg(image)
+    image = glass_socket.get_image()
+    if not image is None:
+        response.image = create_image_msg(image)
     return response
 
 def create_image_msg(image):
@@ -90,18 +77,14 @@ def ar_glass():
     capture_service_name = rospy.get_param(rospy.get_name()+'/capture_service', 'capture')
     image_topic_name = rospy.get_param(rospy.get_name()+"/image_subscriber_topic", 'image_receiver')
     server_id = rospy.get_param(rospy.get_name()+"/server", '192.168.0.177')
-    port_id = rospy.get_param(rospy.get_name()+"/port", 80)
+    port_id = rospy.get_param(rospy.get_name()+"/port", 9191)
 
-    url = 'http://'+server_id+":"+port_id+"/"
-    rospy.loginfo("Connecting to Server at " + server_id + " on Port " + port_id)
-    r =requests.get(url)
-    rospy.loginfo(r.text)
+    global glass_socket
+    glass_socket = GlassSocket(server_id, port_id)
 
     global capture_srv, receiver_sub
     capture_srv = rospy.Service(capture_service_name, ImageSrv, capture_image)
-    receiver_sub = rospy.Subscriber(image_topic_name, ImageMsg, image_receiver_cb)
-
-    
+    receiver_sub = rospy.Subscriber(image_topic_name, BoundingBox, bb_receiver_cb)
 
     rospy.spin()
 
