@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 import time
 import json
+from ar_glass.msg import BoundingBox
+import copy
 
 
 class GlassSocket():
@@ -47,20 +49,23 @@ class GlassSocket():
             rospy.logwarn("Image reception error")
             return None
 
-    def send_bounding_box(self, leftx, topy, rightx, bottomy):
+    def send_bounding_boxes(self, boxes):
         """
             Sends bounding box coordinates to server, using websocket
-            param: leftx
-            param: topy
-            param: rightx
-            param: bottomy
+            param: boxes
+                    type - list(BoundingBox)
         """  
         data = {}
         data['cmd'] = 'bounding_box'
-        data['name'] = 'Item1'
-        data['leftx'] = leftx
-        data['topy'] = topy
-        data['rightx'] = rightx 
-        data['bottomy'] = bottomy 
+        data['bounding_boxes'] = []
+        for box in boxes:
+            box_js = {}
+            box_js['label'] = box.label
+            box_js['x1'] = box.x1
+            box_js['y1'] = box.y1
+            box_js['x2'] = box.x2 
+            box_js['y2'] = box.y2
+            data['bounding_boxes'].append(copy.deepcopy(box_js)) 
+        
         json_data = json.dumps(data)
         self.s.sendall(bytearray(json_data.encode()))

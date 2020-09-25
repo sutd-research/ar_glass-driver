@@ -4,7 +4,7 @@ import sys
 import signal
 from ar_glass.srv import Image as ImageSrv
 from ar_glass.srv import ImageRequest, ImageResponse
-from ar_glass.msg import BoundingBox
+from ar_glass.msg import BoundingBoxesStamped, BoundingBox
 from sensor_msgs.msg import Image as ImageMsg 
 from cv_bridge import CvBridge
 from glass_socket import GlassSocket
@@ -25,13 +25,9 @@ def bb_receiver_cb(msg):
         This callback function gets called each time an external publisher sends a bounding box,
         to be sent to AR Glass.
     """
-    leftx = msg.left_x
-    topy = msg.top_y
-    rightx = msg.right_x
-    bottomy = msg.bottom_y
 
-    rospy.loginfo("Received Bounding box [%d, %d, %d, %d]" %(leftx, topy, rightx, bottomy))
-    glass_socket.send_bounding_box(leftx, topy, rightx, bottomy)
+    rospy.loginfo("Received Bounding boxes. Box count %d" %len(msg.boxes)) 
+    glass_socket.send_bounding_boxes(msg.boxes)
 
 def capture_image(req):
     """
@@ -84,8 +80,9 @@ def ar_glass():
 
     global capture_srv, receiver_sub
     capture_srv = rospy.Service(capture_service_name, ImageSrv, capture_image)
-    receiver_sub = rospy.Subscriber(image_topic_name, BoundingBox, bb_receiver_cb)
+    receiver_sub = rospy.Subscriber(image_topic_name, BoundingBoxesStamped, bb_receiver_cb)
 
+    rospy.loginfo("AR Glass Driver Running!")
     rospy.spin()
 
 

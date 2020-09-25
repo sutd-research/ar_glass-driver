@@ -44,10 +44,12 @@ Tested on Ubuntu 16.04 ROS Kinetic
         uint32 seq
         time stamp
         string frame_id
-    int32 left_x
-    int32 right_x
-    int32 top_y
-    int32 bottom_y
+    ar_glass/BoundingBox[] boxes
+        string label
+        int32 x1
+        int32 y1
+        int32 x2
+        int32 y2
     ```
   
 #### Services

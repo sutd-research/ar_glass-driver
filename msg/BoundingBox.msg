@@ -1,9 +1,9 @@
-# This message contains bounding box coordinates
+## A Bounding box is defined by the coordinates of the two vertices on a diagonal ##
 
-# Header
-std_msgs/Header header
 # Bounding box coordinates
-int32 left_x
-int32 right_x
-int32 top_y
-int32 bottom_y
+string label                # Box label
+int32 x1                    # Vertice 1, x coordinate
+int32 y1                    # Vertice 1, y coordinate
+int32 x2                    # Vertice 2, x coordinate
+int32 y2                    # Vertice 2, y coordinate
+
